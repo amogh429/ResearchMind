@@ -10,3 +10,6 @@ export async function embedText(text, taskType) {
   });
   return response.embeddings[0].values;
 }
+
+
+export { ai };
