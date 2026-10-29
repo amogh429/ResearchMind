@@ -18,3 +18,7 @@ export function getDB() {
 
   return db;
 }
+
+export async function closeDB() {
+  await client.close();
+}
