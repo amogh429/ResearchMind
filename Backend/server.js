@@ -34,11 +34,14 @@ app.post("/api/chat", async (req, res) => {
     const call = response.functionCalls[0];
     const functionName = call.name;
     const query = call.args.query;
+    console.log("Tool called with query:", query);
+
     const result = await retrieveFromDocuments(query);
-    contents.push({
-      role: "model",
-      parts: [{ functionCall: call }],
-    });
+    console.log(
+      "Scores:",
+      result.map((r) => r.score),
+    );
+    contents.push(response.candidates[0].content);
 
     contents.push({
       role: "user",
