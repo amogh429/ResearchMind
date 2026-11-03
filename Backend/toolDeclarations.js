@@ -22,6 +22,27 @@ const toolDeclarations = [
       required: ["query"],
     },
   },
+  {
+    name: "search_web",
+    description: `
+    Searches the web and returns ranked results, each with a title, URl, and content snippet.
+    Use this after retrieve_from_documents returns found: false for a question that asks for
+    information. Also use it when the question needs current information the user's documents
+    cannot contain, such as today's news, prices, or recent events.
+    Do not call this first for questions the user's own documents could plausibly answer.
+    Do not call this for greetings, arithmetic, or small talk.
+    `,
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "A short, specific web search query capturing what needs to be looked up."
+        },
+      },
+      required: ["query"],
+    },
+  },
 ];
 
 export default toolDeclarations;

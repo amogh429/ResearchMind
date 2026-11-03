@@ -67,11 +67,11 @@ app.post("/api/chat", async (req, res) => {
     // Answer every function call in this turn, not just the first
     const responseParts = [];
     for (const call of response.functionCalls) {
-      console.log(`Round ${count} - tool called with query:`, query);
+      console.log(`Round ${count} - tool called: ${call.name}`, call.args);
 
       const tool = toolRegistry[call.name];
       const result = tool ? await tool(call.args) : { error: `Unknown tool: ${call.name}` };
-      
+
       responseParts.push({
         functionResponse: {
           name: call.name,
