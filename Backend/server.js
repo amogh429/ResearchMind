@@ -5,7 +5,7 @@ import { connectDB } from "./db.js";
 import { getDB } from "./db.js";
 import { ai } from "./gemini.js";
 import toolDeclarations from "./toolDeclarations.js";
-import { retrieveFromDocuments } from "./tools/retrieveFromDocuments.js";
+import { toolRegistry } from "./tools/index.js";
 
 await connectDB();
 const app = express();
@@ -67,12 +67,11 @@ app.post("/api/chat", async (req, res) => {
     // Answer every function call in this turn, not just the first
     const responseParts = [];
     for (const call of response.functionCalls) {
-      const query = call.args.query;
       console.log(`Round ${count} - tool called with query:`, query);
 
-      // Only one tool exists in Phase 1, so every call is retrieve_from_documents
-      const result = await retrieveFromDocuments(query);
-      console.log("Found", result.found);
+      const tool = toolRegistry[call.name];
+      const result = tool ? await tool(call.args) : { error: `Unknown tool: ${call.name}` };
+      
       responseParts.push({
         functionResponse: {
           name: call.name,
