@@ -1,7 +1,14 @@
+import "dotenv/config";
+import { getDB } from "./db.js";
 import { ai } from "./gemini.js";
 import toolDeclarations from "./toolDeclarations.js";
 import { toolRegistry } from "./tools/index.js";
+await connectDB();
+
+
 const MAX_TRIES = 4;
+
+
 const FALLBACK_MESSAGE =
   "I couldn't find a confident answer within the allowed number of lookups.";
 const SYSTEM_INSTRUCTION = `You are a helpful assistant that answers users' questions using the available document-retrieval and web-search tools.
