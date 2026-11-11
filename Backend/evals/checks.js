@@ -6,7 +6,7 @@ export function checkPath(testCases, trace){
     // Style 1: an exact sequence
     if(testCases.expectedPath){
         const expected = testCases.expectedPath;
-        const same = actual.lenght === expected.length &&
+        const same = actual.length === expected.length &&
             actual.every((name,i) => name === expected[i]);
 
         return same
@@ -24,7 +24,7 @@ export function checkPath(testCases, trace){
 
     const problem = [];
     if(missing.length) problems.push(`Never called: ${missing.join(", ")}`);
-    if(forbidden.lenght) problems.push(`Called forbidden tool: ${forbidden.join(", ")}`);
+    if(forbidden.length) problems.push(`Called forbidden tool: ${forbidden.join(", ")}`);
 
     return {
         passed: false,
