@@ -3,11 +3,8 @@ import { getDB } from "./db.js";
 import { ai } from "./gemini.js";
 import toolDeclarations from "./toolDeclarations.js";
 import { toolRegistry } from "./tools/index.js";
-await connectDB();
-
 
 const MAX_TRIES = 4;
-
 
 const FALLBACK_MESSAGE =
   "I couldn't find a confident answer within the allowed number of lookups.";
@@ -68,8 +65,7 @@ const config = {
 };
 
 export async function runCoordinator(message) {
-
-    const contents = [
+  const contents = [
     {
       role: "user",
       parts: [{ text: message }],
@@ -103,7 +99,12 @@ export async function runCoordinator(message) {
         ? await tool(call.args)
         : { error: `Unknown tool: ${call.name}` };
 
-      toolCalls.push({ round: count, name: call.name, args: call.args, result });
+      toolCalls.push({
+        round: count,
+        name: call.name,
+        args: call.args,
+        result,
+      });
 
       responseParts.push({
         functionResponse: {
@@ -117,7 +118,7 @@ export async function runCoordinator(message) {
     contents.push({ role: "user", parts: responseParts });
 
     response = await ai.models.generateContent({
-      model: MODEL,
+      model: "gemini-3.5-flash",
       contents,
       config,
     });

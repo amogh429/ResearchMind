@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { connectDB, closeDB } from "../db.js";
+import { connectDB,closeDB } from "../db.js";
 import { runCoordinator } from "../coordinator.js";
 import { testCases } from "./cases.js";
 import { checkPath } from "./checks.js";
@@ -45,16 +45,12 @@ async function runEvals() {
       }
     }
 
-    const passed = results.filter(
-      (result) => result.status === "PASS"
-    ).length;
+    const passed = results.filter((result) => result.status === "PASS").length;
 
-    const failed = results.filter(
-      (result) => result.status === "FAIL"
-    ).length;
+    const failed = results.filter((result) => result.status === "FAIL").length;
 
     const errored = results.filter(
-      (result) => result.status === "ERROR"
+      (result) => result.status === "ERROR",
     ).length;
 
     console.log("\nSummary");
