@@ -3,7 +3,9 @@ import "dotenv/config";
 import { connectDB,closeDB } from "../db.js";
 import { runCoordinator } from "../coordinator.js";
 import { testCases } from "./cases.js";
-import { checkPath } from "./checks.js";
+import { checkPath,checkToolErrors,combineResults } from "./checks.js";
+
+const checks = [checkPath,checkToolErrors];
 
 async function runEvals() {
   const results = [];
@@ -14,25 +16,22 @@ async function runEvals() {
     for (const testCase of testCases) {
       try {
         const trace = await runCoordinator(testCase.input);
-        const result = checkPath(testCase, trace);
 
-        if (result.passed) {
-          console.log(`PASS ${testCase.name}`);
+        const checkResults = checks.map((check) => check(testCase,trace));
+        const result = combineResults(checkResults);
 
-          results.push({
-            name: testCase.name,
-            status: "PASS",
-          });
-        } else {
-          console.log(`FAIL ${testCase.name}`);
-          console.log(`  ${result.reason}`);
+        console.log(`${result.status} ${testCase.name}`);
 
-          results.push({
-            name: testCase.name,
-            status: "FAIL",
-            reason: result.reason,
-          });
+        for(const reason of result.reasons){
+          console.log(` ${reason}`);
         }
+
+        results.push({
+          name: testCase.name,
+          status: testCase.status,
+          reasons: result.reasons,
+        });
+
       } catch (error) {
         console.log(`ERROR ${testCase.name}`);
         console.log(`  ${error.message}`);
@@ -40,7 +39,7 @@ async function runEvals() {
         results.push({
           name: testCase.name,
           status: "ERROR",
-          reason: error.message,
+          reasons: [error.message],
         });
       }
     }

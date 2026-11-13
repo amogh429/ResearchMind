@@ -13,9 +13,9 @@ export function checkPath(testCases, trace) {
       actual.every((name, i) => name === expected[i]);
 
     return same
-      ? { passed: true }
+      ? { status: "PASS" }
       : {
-          passed: false,
+          status: "FAIL",
           reason: `Expected path [${show(expected)}] but got [${show(actual)}]`,
         };
   }
@@ -39,7 +39,7 @@ export function checkPath(testCases, trace) {
   };
 }
 
-export function checkToolErrors(trace) {
+export function checkToolErrors(testCase,trace) {
   for (const toolCall of trace.toolCalls) {
     const tool = toolRegistry[toolCall.name];
 
@@ -59,6 +59,23 @@ export function checkToolErrors(trace) {
   }
 
   return {
-    status: "OK",
+    status: "PASS",
+  };
+}
+
+export function combineResults(results){
+  const reasons = results.filter((result) => result.status !==  "PASS").map((result) => result.reason);
+
+  let status = "PASS";
+
+  if(results.some((result) => result.status === "ERROR")){
+    status = "ERROR";
+  }else if(results.some((result) => result.status === "FAIL")){
+    status = "FAIL";
+  }
+
+  return {
+    status,
+    reasons,
   };
 }
