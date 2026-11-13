@@ -2,40 +2,67 @@ import { toolRegistry } from "../tools/index.js";
 
 const show = (names) => (names.length ? names.join(" -> ") : "no tools");
 
-export function checkPath(testCases, trace) {
-  const actual = trace.toolCalls.map((call) => call.name);
+export function checkPath(testCase, trace) {
+  const path = trace.toolCalls.map((call) => call.name);
 
-  // Style 1: an exact sequence
-  if (testCases.expectedPath) {
-    const expected = testCases.expectedPath;
-    const same =
-      actual.length === expected.length &&
-      actual.every((name, i) => name === expected[i]);
+  if (testCase.expectedPath) {
+    const expected = testCase.expectedPath;
 
-    return same
-      ? { status: "PASS" }
-      : {
+    if (path.length !== expected.length) {
+      return {
+        status: "FAIL",
+        reason: `Expected path [${expected.join(
+          ", "
+        )}], got [${path.join(", ")}]`,
+      };
+    }
+
+    for (let i = 0; i < expected.length; i++) {
+      if (path[i] !== expected[i]) {
+        return {
           status: "FAIL",
-          reason: `Expected path [${show(expected)}] but got [${show(actual)}]`,
+          reason: `Expected path [${expected.join(
+            ", "
+          )}], got [${path.join(", ")}]`,
         };
+      }
+    }
+
+    return {
+      status: "PASS",
+    };
   }
 
-  // Style 2: tools that must and must not be called
-  const missing = (testCases.mustCall ?? []).filter((n) => !actual.includes(n));
-  const forbidden = (testCases.mustNotCall ?? []).filter((n) =>
-    actual.includes(n),
-  );
+  if (testCase.mustCall || testCase.mustNotCall) {
+    const problems = [];
 
-  if (missing.length === 0 && forbidden.length === 0) return { passed: true };
+    for (const name of testCase.mustCall ?? []) {
+      if (!path.includes(name)) {
+        problems.push(`Expected tool "${name}" to be called`);
+      }
+    }
 
-  const problem = [];
-  if (missing.length) problems.push(`Never called: ${missing.join(", ")}`);
-  if (forbidden.length)
-    problems.push(`Called forbidden tool: ${forbidden.join(", ")}`);
+    for (const name of testCase.mustNotCall ?? []) {
+      if (path.includes(name)) {
+        problems.push(`Tool "${name}" should not have been called`);
+      }
+    }
+
+    if (problems.length > 0) {
+      return {
+        status: "FAIL",
+        reason: problems.join("; "),
+      };
+    }
+
+    return {
+      status: "PASS",
+    };
+  }
 
   return {
-    passed: false,
-    reason: `${problems.join("; ")} (actual path: [${show(actual)})]`,
+    status: "FAIL",
+    reason: "Test case has no path requirements",
   };
 }
 

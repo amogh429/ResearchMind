@@ -9,7 +9,7 @@ export const testCases = [
     name: "Wind turbines",
     input: "How do wind turbines produce electricity?",
     mustCall: ["retrieve_from_documents"],
-    mustNotCall: ["search_web"],
+    mustNotCall: ["retrieve_from_documents"],
   },
   {
   name: "marathon",
