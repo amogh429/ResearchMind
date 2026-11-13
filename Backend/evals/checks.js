@@ -12,7 +12,7 @@ export function checkPath(testCase, trace) {
       return {
         status: "FAIL",
         reason: `Expected path [${expected.join(
-          ", "
+          ", ",
         )}], got [${path.join(", ")}]`,
       };
     }
@@ -22,7 +22,7 @@ export function checkPath(testCase, trace) {
         return {
           status: "FAIL",
           reason: `Expected path [${expected.join(
-            ", "
+            ", ",
           )}], got [${path.join(", ")}]`,
         };
       }
@@ -61,12 +61,12 @@ export function checkPath(testCase, trace) {
   }
 
   return {
-    status: "FAIL",
+    status: "ERROR",
     reason: "Test case has no path requirements",
   };
 }
 
-export function checkToolErrors(testCase,trace) {
+export function checkToolErrors(testCase, trace) {
   for (const toolCall of trace.toolCalls) {
     const tool = toolRegistry[toolCall.name];
 
@@ -90,15 +90,29 @@ export function checkToolErrors(testCase,trace) {
   };
 }
 
-export function combineResults(results){
-  const reasons = results.filter((result) => result.status !==  "PASS").map((result) => result.reason);
+export function combineResults(results) {
+  const reasons = results
+    .filter((result) => result.status !== "PASS")
+    .map((result) => result.reason);
 
   let status = "PASS";
 
-  if(results.some((result) => result.status === "ERROR")){
-    status = "ERROR";
-  }else if(results.some((result) => result.status === "FAIL")){
-    status = "FAIL";
+  for (const result of results) {
+    if (
+      result.status !== "PASS" &&
+      result.status !== "FAIL" &&
+      result.status !== "ERROR"
+    ) {
+      status = "ERROR";
+      reasons.push(`Unrecognized check status: ${result.status}`);
+      continue;
+    }
+
+    if (result.status === "ERROR") {
+      status = "ERROR";
+    } else if (result.status === "FAIL" && status !== "ERROR") {
+      status = "FAIL";
+    }
   }
 
   return {
