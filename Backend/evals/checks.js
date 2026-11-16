@@ -120,3 +120,17 @@ export function combineResults(results) {
     reasons,
   };
 }
+
+export function checkNoFallback(_testCase, trace) {
+  if (trace.fallbackMessageUsed) {
+    return {
+      status: "FAIL",
+      reason:
+        "Coordinator use the fallback message after reaching the lookup cap.",
+    };
+  }
+
+  return {
+    status: "PASS",
+  };
+}
