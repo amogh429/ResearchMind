@@ -46,7 +46,7 @@ const passingCase = {
 
 const windTurbineCase = {
   name: "Wind Turbine",
-  input: "How do wind turbines wokr?",
+  input: "How do wind turbines work?",
   mustCall: ["retrieve_from_documents"],
   mustNotCall: ["search_web"],
 };
