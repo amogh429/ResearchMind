@@ -3,9 +3,9 @@ import "dotenv/config";
 import { connectDB, closeDB } from "../db.js";
 import { runCoordinator } from "../coordinator.js";
 import { testCases } from "./cases.js";
-import { checkPath, checkToolErrors, combineResults,checkNoFallback } from "./checks.js";
+import { checkPath, checkToolErrors, combineResults,checkNoFallback,checkUrlsFromSearch } from "./checks.js";
 
-const checks = [checkPath, checkToolErrors,checkNoFallback];
+const checks = [checkPath, checkToolErrors,checkNoFallback,checkUrlsFromSearch];
 
 async function runEvals() {
   const results = [];

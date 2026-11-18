@@ -134,3 +134,66 @@ export function checkNoFallback(_testCase, trace) {
     status: "PASS",
   };
 }
+
+
+function normalizeUrl(url){
+  return url.trim().replace(/[.,;:!]+$/, "").replace(/\/+$/, "");
+};
+
+export function checkUrlsFromSearch(_testCase,trace){
+  const allowedUrls = new Set();
+
+  for(const toolCall of trace.toolCalls ?? []){
+    if(toolCall.name !== "search_web"){
+      continue;
+    }
+
+    const results = toolCall.result?.results;
+
+    if(!Array.isArray(results)){
+      continue;
+    }
+
+    for(const result of results){
+      if(typeof result.url === "string"){
+        allowedUrls.add(normalizeUrl(result.url));
+      }
+    }
+  }
+
+  const answer = trace.finalAnswer ?? trace.answer ;
+
+  if(typeof answer !== "string"){
+    return {
+      status: "ERROR",
+      reason: "Trace final answer must be a string",
+    };
+  }
+
+  const answerUrls = answer.match(/https?:\/\/[^\s)\]>"']+/g) ?? [];
+
+  const normalizeAnswerUrls = [
+    ...new Set(answerUrls.map(normalizeUrl)),
+  ];
+
+  if(normalizeAnswerUrls.length === 0){
+    return {
+      status: "PASS",
+    };
+  }
+
+  const unsupportedUrls = normalizeAnswerUrls.filter(
+    (url) => !allowedUrls.has(url)
+  );
+
+  if(unsupportedUrls.length > 0){
+    return {
+      status: "FAIL",
+      reason: `Answer contains  URLs not found in search_web results: ${unsupportedUrls.join(", ")}`,
+    };
+  }
+
+  return {
+    status: "PASS",
+  }
+}

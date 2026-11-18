@@ -4,6 +4,7 @@ import {
   checkPath,
   combineResults,
   checkNoFallback,
+  checkUrlsFromSearch,
 } from "./checks.js";
 
 const tavilyDown = {
@@ -101,17 +102,116 @@ const fallbackWithToolErrorTrace = {
   ],
 };
 
-console.log("no fallback:", checkNoFallback({}, noFallbackTrace));
+const validTrace = {
+  toolCalls: [
+    {
+      name: "search_web",
+      args: {
+        query: "example page",
+      },
+      result: {
+        found: true,
+        results: [
+          {
+            title: "Example Page",
+            url: "https://example.com/page/",
+          },
+          {
+            title: "YouTube",
+            url: "https://www.youtube.com/watch?v=V0Y1EvWrQVo&vl=en",
+          },
+        ],
+      },
+    },
+  ],
 
-console.log("fallback:", checkNoFallback({}, fallbackTrace));
+  finalAnswer:
+    "Read [https://example.com/page](https://example.com/page). " +
+    "Video: https://www.youtube.com/watch?v=V0Y1EvWrQVo&vl=en.",
+};
 
-const fallbackResult = checkNoFallback({}, fallbackWithToolErrorTrace);
+const inventedUrlTrace = {
+  toolCalls: [
+    {
+      name: "search_web",
+      args: {
+        query: "example page",
+      },
+      result: {
+        found: true,
+        results: [
+          {
+            title: "Example Page",
+            url: "https://example.com/page/",
+          },
+        ],
+      },
+    },
+  ],
 
-const toolErrorResult = checkToolErrors({}, fallbackWithToolErrorTrace);
+  finalAnswer:
+    "Source: https://example.com/page. " +
+    "More information: https://invented.com/article.",
+};
 
-const combinedResult = combineResults([fallbackResult, toolErrorResult]);
+const noUrlsTrace = {
+  toolCalls: [
+    {
+      name: "search_web",
+      args: {
+        query: "example page",
+      },
+      result: {
+        found: true,
+        results: [
+          {
+            title: "Example Page",
+            url: "https://example.com/page/",
+          },
+        ],
+      },
+    },
+  ],
 
-console.log("fallback + tool error:", combinedResult);
+  finalAnswer: "The answer is based on the search results.",
+};
+
+const failedSearchTrace = {
+  toolCalls: [
+    {
+      name: "search_web",
+      args: {
+        query: "example page",
+      },
+      result: {
+        found: false,
+        error: "Web search is currently unavailable.",
+      },
+    },
+  ],
+
+  finalAnswer: "More information can be found at https://example.com/page.",
+};
+
+console.log("1. All URLs valid:", checkUrlsFromSearch({}, validTrace));
+
+console.log("2. One invented URL:", checkUrlsFromSearch({}, inventedUrlTrace));
+
+console.log("3. No URLs:", checkUrlsFromSearch({}, noUrlsTrace));
+
+console.log("4. Failed search:", checkUrlsFromSearch({}, failedSearchTrace));
+
+// console.log("no fallback:", checkNoFallback({}, noFallbackTrace));
+
+// console.log("fallback:", checkNoFallback({}, fallbackTrace));
+
+// const fallbackResult = checkNoFallback({}, fallbackWithToolErrorTrace);
+
+// const toolErrorResult = checkToolErrors({}, fallbackWithToolErrorTrace);
+
+// const combinedResult = combineResults([fallbackResult, toolErrorResult]);
+
+// console.log("fallback + tool error:", combinedResult);
 
 // console.log(
 //   "wind turbine pass:",
