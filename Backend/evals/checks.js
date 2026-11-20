@@ -196,4 +196,53 @@ export function checkUrlsFromSearch(_testCase,trace){
   return {
     status: "PASS",
   }
+};
+
+function extractUrls(text) {
+  return text.match(/https?:\/\/[^\s)\]>"']+/g) ?? [];
 }
+
+export function checkWebAnswerCites(_testCase,trace){
+
+  const answer = trace.finalAnswer ;
+
+  if(typeof answer !== "string"){
+    return {
+      status: "ERROR",
+      reason: "Trace final answer must be a string",
+    };
+  }
+
+  let webResultsFound = false;
+  for(const toolCall of trace.toolCalls ?? []){
+    if(toolCall.name !== "search_web"){
+      continue;
+    }
+
+    const results = toolCall.result?.results;
+
+    if(Array.isArray(results) && results.length > 0){
+      webResultsFound = true;
+      break;
+    }
+  }
+
+  if(!webResultsFound){
+    return{
+      status: "PASS",
+    };
+  }
+
+  const answerUrls = extractUrls(answer);
+
+  if(answerUrls.length > 0){
+    return {
+      status: "PASS",
+    };
+  }
+  return{
+    status: "FAIL",
+    reason: "Web results were found but the answer cited no source."
+  };
+}
+
