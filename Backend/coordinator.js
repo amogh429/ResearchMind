@@ -64,7 +64,9 @@ const config = {
   tools: [{ functionDeclarations: toolDeclarations }],
 };
 
-export async function runCoordinator(message) {
+const registry = options.toolRegistry ?? toolRegistry;
+
+export async function runCoordinator(message, options = {}) {
   const contents = [
     {
       role: "user",
@@ -94,7 +96,7 @@ export async function runCoordinator(message) {
     for (const call of response.functionCalls) {
       console.log(`Round ${count} - tool called: ${call.name}`, call.args);
 
-      const tool = toolRegistry[call.name];
+      const tool = registry[call.name];
       const result = tool
         ? await tool(call.args)
         : { error: `Unknown tool: ${call.name}` };
