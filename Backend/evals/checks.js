@@ -140,6 +140,10 @@ function normalizeUrl(url){
   return url.trim().replace(/[.,;:!]+$/, "").replace(/\/+$/, "");
 };
 
+function extractUrls(text) {
+  return text.match(/https?:\/\/[^\s)\]>"']+/g) ?? [];
+}
+
 export function checkUrlsFromSearch(_testCase,trace){
   const allowedUrls = new Set();
 
@@ -170,7 +174,7 @@ export function checkUrlsFromSearch(_testCase,trace){
     };
   }
 
-  const answerUrls = answer.match(/https?:\/\/[^\s)\]>"']+/g) ?? [];
+  const answerUrls = extractUrls(answer);
 
   const normalizeAnswerUrls = [
     ...new Set(answerUrls.map(normalizeUrl)),
@@ -197,10 +201,6 @@ export function checkUrlsFromSearch(_testCase,trace){
     status: "PASS",
   }
 };
-
-function extractUrls(text) {
-  return text.match(/https?:\/\/[^\s)\]>"']+/g) ?? [];
-}
 
 export function checkWebAnswerCites(_testCase,trace){
 
